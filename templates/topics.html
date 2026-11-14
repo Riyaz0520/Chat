@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Discussions - Tharik Forum{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+  <div>
+    <h1 class="h3 mb-1">Discussions</h1>
+    <p class="text-muted mb-0">Browse topics, comments, and replies.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('topic_new') }}"><i class="bi bi-plus-lg"></i> New topic</a>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body">
+    <input id="topic-filter" class="form-control" type="search" placeholder="Filter loaded topics..." aria-label="Filter topics">
+  </div>
+</div>
+
+<div class="topic-list" id="topic-list">
+  {% for topic in topics %}
+  <article class="card border-0 shadow-sm topic-card mb-3" data-search="{{ (topic.title ~ ' ' ~ topic.excerpt ~ ' ' ~ topic.author_name ~ ' ' ~ topic.tags|map(attribute='name')|join(' '))|lower }}">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div class="min-w-0">
+          <h2 class="h5 mb-2">
+            <a class="topic-title text-decoration-none" href="{{ url_for('topic_view', topic_id=topic.id) }}">{{ topic.title }}</a>
+          </h2>
+          <p class="text-muted mb-3">{{ topic.excerpt }}</p>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="badge text-bg-light border"><i class="bi bi-person"></i> {{ topic.author_name }}</span>
+            <span class="badge text-bg-light border"><i class="bi bi-eye"></i> {{ topic.view_count }} views</span>
+            <span class="badge text-bg-light border"><i class="bi bi-chat"></i> {{ topic.comment_count }} comments</span>
+            {% if topic.reply_count %}<span class="badge text-bg-light border">{{ topic.reply_count }} replies</span>{% endif %}
+            {% for tag in topic.tags %}<span class="badge text-bg-primary">{{ tag.name }}</span>{% endfor %}
+          </div>
+        </div>
+        <div class="text-end text-nowrap">
+          <small class="text-muted d-block">{{ topic.created_text }}</small>
+          {% if user.id == topic.user_id or is_admin %}
+          <div class="dropdown mt-2">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('topic_edit', topic_id=topic.id) }}">Edit</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="post" action="{{ url_for('topic_delete', topic_id=topic.id) }}" class="confirm-submit" data-confirm="Delete this topic and all of its comments and replies?">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                  <button class="dropdown-item text-danger" type="submit">Delete</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </article>
+  {% else %}
+  <div class="card border-0 shadow-sm">
+    <div class="card-body text-center text-muted py-5">
+      No topics yet. <a href="{{ url_for('topic_new') }}">Create the first discussion</a>.
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

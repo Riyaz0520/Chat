@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if topic else 'New' }} topic - Tharik Forum{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="h3 mb-1">{{ 'Edit topic' if topic else 'Create a new topic' }}</h1>
+  <p class="text-muted mb-0">Topics support basic HTML formatting.</p>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+    {% set selected_ids = form.getlist('category_ids') if form is defined and form else (topic.category_ids if topic else []) %}
+    {% set title_value = form.get('title') if form is defined and form else (topic.title if topic else '') %}
+    {% set content_value = form.get('content') if form is defined and form else (topic.content if topic else '') %}
+    <form method="post" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="mb-3">
+        <label class="form-label" for="title">Title</label>
+        <input class="form-control" id="title" name="title" value="{{ title_value }}" maxlength="180" required autofocus>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="category_ids">Categories</label>
+        <select class="form-select" id="category_ids" name="category_ids" multiple size="6">
+          {% for category in categories %}
+          <option value="{{ category.id }}" {% if category.id in selected_ids %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">Hold Ctrl to select multiple categories.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="content">Content</label>
+        <textarea class="form-control font-monospace" id="content" name="content" rows="12" required>{{ content_value }}</textarea>
+        <div class="form-text">Allowed tags: p, br, strong, em, u, s, ul, ol, li, blockquote, pre, code, a, img.</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Save topic</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('topic_view', topic_id=topic.id) if topic else url_for('topics') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

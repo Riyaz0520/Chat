@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ topic.title }} - Tharik Forum{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+  <div>
+    <a class="small text-muted text-decoration-none" href="{{ url_for('topics') }}"><i class="bi bi-arrow-left"></i> Back to discussions</a>
+    <h1 class="h3 mt-2 mb-2">{{ topic.title }}</h1>
+    <div class="d-flex flex-wrap gap-2 align-items-center text-muted small">
+      <span><i class="bi bi-person"></i> {{ topic.author_name }}</span>
+      <span><i class="bi bi-clock"></i> {{ topic.created_text }}</span>
+      {% if topic.updated_at and topic.updated_at != topic.created_at %}<span>Updated {{ topic.updated_text }}</span>{% endif %}
+      <span><i class="bi bi-eye"></i> {{ topic.view_count }} views</span>
+    </div>
+  </div>
+  {% if can_manage %}
+  <div class="btn-group">
+    <a class="btn btn-outline-primary" href="{{ url_for('topic_edit', topic_id=topic.id) }}"><i class="bi bi-pencil"></i> Edit</a>
+    <form method="post" action="{{ url_for('topic_delete', topic_id=topic.id) }}" class="confirm-submit" data-confirm="Delete this topic and all of its comments and replies?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Delete</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    {% if topic.tags %}
+    <div class="mb-3">
+      {% for tag in topic.tags %}<span class="badge text-bg-primary me-1">{{ tag.name }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <article class="rich-content">{{ topic.content | safe }}</article>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">
+    <h2 class="h5 mb-0"><i class="bi bi-chat-left-text"></i> Comments ({{ comments|length }})</h2>
+  </div>
+  <div class="card-body">
+    {% for comment in comments %}
+    <div class="comment-item">
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+          <strong>{{ comment.author_name }}</strong>
+          {% if comment.author_username %}<span class="text-muted small">@{{ comment.author_username }}</span>{% endif %}
+          <span class="text-muted small ms-2">{{ comment.created_text }}</span>
+        </div>
+        {% if user.id == comment.user_id or is_admin %}
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('comment_edit', comment_id=comment.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('comment_delete', comment_id=comment.id) }}" class="confirm-submit" data-confirm="Delete this comment and its replies?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+      <div class="rich-content mt-2">{{ comment.content | safe }}</div>
+
+      {% if comment.replies %}
+      <div class="replies ms-md-4 mt-3">
+        {% for reply in comment.replies %}
+        <div class="reply-item {% if loop.index > 4 %}reply-hidden{% endif %}">
+          <div class="d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <strong>{{ reply.author_name }}</strong>
+              {% if reply.author_username %}<span class="text-muted small">@{{ reply.author_username }}</span>{% endif %}
+              <span class="text-muted small ms-2">{{ reply.created_text }}</span>
+            </div>
+            {% if user.id == reply.user_id or is_admin %}
+            <div class="d-flex gap-2">
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('reply_edit', reply_id=reply.id) }}">Edit</a>
+              <form method="post" action="{{ url_for('reply_delete', reply_id=reply.id) }}" class="confirm-submit" data-confirm="Delete this reply?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          <div class="rich-content mt-2">{{ reply.content | safe }}</div>
+        </div>
+        {% endfor %}
+        {% if comment.replies|length > 4 %}
+        <button class="btn btn-sm btn-outline-primary toggle-replies" type="button" data-total="{{ comment.replies|length }}">Show all {{ comment.replies|length }} replies</button>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <form class="reply-form mt-3" method="post" action="{{ url_for('reply_create', topic_id=topic.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="comment_id" value="{{ comment.id }}">
+        <textarea class="form-control" name="content" rows="2" placeholder="Write a reply..." required></textarea>
+        <button class="btn btn-sm btn-primary mt-2" type="submit">Reply</button>
+      </form>
+      <hr>
+    </div>
+    {% else %}
+    <p class="text-muted">No comments yet. Be the first to reply.</p>
+    {% endfor %}
+
+    <form method="post" action="{{ url_for('comment_create', topic_id=topic.id) }}" class="mt-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="form-label" for="comment-content">Add a comment</label>
+      <textarea class="form-control" id="comment-content" name="content" rows="5" placeholder="Write your comment..." required></textarea>
+      <button class="btn btn-primary mt-3" type="submit">Post comment</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

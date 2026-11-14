@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ label|lower }} - Tharik Forum{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="h3 mb-1">Edit {{ label|lower }}</h1>
+  <p class="text-muted mb-0">Basic HTML formatting is allowed.</p>
+</div>
+<div class="card border-0 shadow-sm" style="max-width: 820px;">
+  <div class="card-body">
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+    <form method="post" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="mb-3">
+        <label class="form-label" for="content">{{ label }}</label>
+        <textarea class="form-control" id="content" name="{{ name }}" rows="10" required>{{ value }}</textarea>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Save</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('topics') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

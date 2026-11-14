@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Home - Tharik Forum{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+  <div>
+    <h1 class="h3 mb-1">Welcome back, {{ user.name }}</h1>
+    <p class="text-muted mb-0">Here is what is happening across the forum.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('topic_new') }}"><i class="bi bi-plus-lg"></i> New topic</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="stat-card"><i class="bi bi-people"></i><div><strong>{{ stats.users }}</strong><span>Users</span></div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card info"><i class="bi bi-chat-left-text"></i><div><strong>{{ stats.topics }}</strong><span>Topics</span></div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card warning"><i class="bi bi-tags"></i><div><strong>{{ stats.categories }}</strong><span>Categories</span></div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card success"><i class="bi bi-chat-square"></i><div><strong>{{ stats.comments }}</strong><span>Comments</span></div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Recent discussions</h2>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('topics') }}">View all</a>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for topic in topics %}
+        <a class="list-group-item list-group-item-action" href="{{ url_for('topic_view', topic_id=topic.id) }}">
+          <div class="d-flex justify-content-between gap-3">
+            <div>
+              <h3 class="h6 mb-1">{{ topic.title }}</h3>
+              <p class="text-muted small mb-1">{{ topic.excerpt }}</p>
+              <div class="d-flex flex-wrap gap-2 small text-muted">
+                <span><i class="bi bi-person"></i> {{ topic.author_name }}</span>
+                <span><i class="bi bi-eye"></i> {{ topic.view_count }}</span>
+                <span><i class="bi bi-chat"></i> {{ topic.comment_count + topic.reply_count }}</span>
+              </div>
+            </div>
+            <small class="text-nowrap text-muted">{{ topic.created_text }}</small>
+          </div>
+        </a>
+        {% else %}
+        <div class="list-group-item text-center text-muted py-5">No discussions yet. Start the first topic.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white"><h2 class="h5 mb-0">Categories</h2></div>
+      <div class="card-body">
+        {% for category in categories %}
+        <div class="mb-3">
+          <strong>{{ category.name }}</strong>
+          <p class="small text-muted mb-0">{{ category.description }}</p>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No categories yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
